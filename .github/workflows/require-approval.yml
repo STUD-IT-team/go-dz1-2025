@@ -1,0 +1,25 @@
+name: Check PR Approval
+
+on:
+  pull_request:
+    types: ['*']
+
+jobs:
+  check-approval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for minimum approvals
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Скрипт проверяет, есть ли хотя бы один аппрув
+          approvals=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
+            | jq '.[] | select(.state == "APPROVED") | .user.login' | wc -l)
+          
+          if [ $approvals -lt 1 ]; then
+            echo "❌ PR requires at least 1 approval"
+            exit 1
+          else
+            echo "✅ PR has sufficient approvals"
+          fi

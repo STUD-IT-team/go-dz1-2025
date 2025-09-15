@@ -13,6 +13,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Check if pushing to main (FAIL BLOCK)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        echo "❌ Прямой push в main запрещен!"
+        echo "Используйте Pull Request для мержа в main"
+        exit 1
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
